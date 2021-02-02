@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="utils.js"></script>
+  </head>
+  <body>
+    <script>
+      var arr = {
+        name: 'link',
+        age: ';;;',
+        aa: 123,
+        hearder: {
+          Content: '213',
+          post: {
+            X: 123213213
+          }
+        },
+        key: Symbol('AA'),
+        fn: function () {
+          console.log(1)
+        },
+        date: new Date(),
+        reg: /^$/
+      }
+      let arr1 = _.clone(true, arr)
+      console.log(arr1.hearder === arr.hearder)
+    </script>
+  </body>
+</html>
