@@ -9,14 +9,15 @@
   <body>
     <script>
       var arr = {
-        name: 'link',
+        name: 'arr',
         age: ';;;',
         aa: 123,
         hearder: {
           Content: '213',
           post: {
             X: 123213213
-          }
+          },
+          zzz: '12123'
         },
         key: Symbol('AA'),
         fn: function () {
@@ -25,8 +26,17 @@
         date: new Date(),
         reg: /^$/
       }
-      let arr1 = _.clone(true, arr)
-      console.log(arr1.hearder === arr.hearder)
+      var arr2 = {
+        name: 'arr2',
+        hearder: {
+          Content: '213',
+          post: {
+            XZZZZ: 123213213
+          }
+        },
+        dddd: 111
+      }
+      console.log(_.merge(arr2, arr))
     </script>
   </body>
 </html>

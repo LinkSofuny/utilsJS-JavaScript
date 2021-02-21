@@ -170,6 +170,56 @@
       return result
     }
   }
+  // 对象的深浅合并
+  var merge = function merge() {
+    var target = arguments[0] || {},
+      len = arguments.length, // 3
+      i = 1,
+      deep
+    // 1. 第一项为 true
+    if (typeof target === 'boolean') {
+      deep = target
+      target = arguments[i] || {}
+      i++ // 2
+    }
+    if (i >= len) {
+      return target
+    }
+    if (toType(target) !== 'object' && !isFunction(target)) {
+      target = {}
+    }
+    for (; i < len; i++) {
+      var options,
+        src,
+        cloneItem,
+        key,
+        // 遍历出每个对象
+        options = arguments[i]
+      for (key in options) {
+        var copy = options[key],
+          copyIsArr = Array.isArray(copy)
+        // 防止搜索公共属性, 以及防止属性为对象本身的死循环
+        if (key === '__proto__' || target === copy) continue
+        // 深合并
+        if (deep && copy && (isPlainObject(copy) || copyIsArr)) {
+          src = target[key]
+          if (copyIsArr && !Array.isArray(src)) {
+            cloneItem = []
+          } else if (!copyIsArr && !isPlainObject(src)) {
+            cloneItem = {}
+          } else {
+            cloneItem = src
+          }
+          copyIsArr = false
+          target[key] = merge(deep, cloneItem, copy)
+        } else if (copy !== undefined) {
+          target[key] = copy
+        }
+      }
+    }
+    return target
+  }
+
   // 对象的深浅克隆
   var clone = function clone() {
     var target = arguments[0],
@@ -222,7 +272,8 @@
     debounce: debounce,
     throttle: throttle,
     each: each,
-    clone: clone
+    clone: clone,
+    merge: merge
   }
 
   if (typeof window !== 'undefined') {
