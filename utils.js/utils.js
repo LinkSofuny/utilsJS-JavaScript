@@ -134,8 +134,9 @@
       return result
     }
   }
+
   /**
-   *  throttle: 函数防抖
+   *  throttle: 函数节流
    *    @params
    *      func [function, required]: 需要执行的函数,
    *      wait [number]: 设定触发的频次, 默认是300ms,
@@ -150,11 +151,13 @@
     let previous = 0,
       timer = null,
       result
+
     return function proxy() {
       let now = +new Date(),
         remain = wait - (now - previous),
         self = this,
         params = [].slice.call(arguments)
+
       if (remain <= 0) {
         result = func.apply(self, params)
         previous = +new Date()

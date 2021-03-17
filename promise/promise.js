@@ -17,9 +17,9 @@
 
     // 用于改变promise实例中的 结果 与 状态
     change = function change(state, result) {
-      if (self.state !== 'pending') return
-      self.result = result
-      self.state = state
+      if (self.PromiseState !== 'pending') return
+      self.PromiseResult = result
+      self.PromiseState = state
 
       // 如果实例状态发生改变, 则通知事件池中的任务执行
       var callbacks = state === 'fulfilled' ? self.onFulfilledCallbacks : self.onRejectedCallbacks,
@@ -30,7 +30,7 @@
         setTimeout(function () {
           for (; i < len; i++) {
             callback = callbacks[i]
-            if (typeof callback === 'function') callback(self.result)
+            if (typeof callback === 'function') callback(self.PromiseResult)
           }
         }, 0)
       }
@@ -59,9 +59,11 @@
     }
     return false
   }
+
   // onFulfilled, onRejected方法的执行返回结果处理
   function handle(newPromise, x, resolve, reject) {
     if (newPromise === x) throw new TypeError('Chaining cycle detected for promise')
+
     if (isPromise(x)) {
       try {
         // Promise实例x的执行结果决定newPromise的状态
@@ -96,11 +98,11 @@
       newPromise = new Promise(function (resolve, reject) {
         // 1. 已经知道了pomise实例的状态成功与否
         // 2. 还未知, 则等待promise实例内executor的执行
-        switch (self.state) {
+        switch (self.PromiseState) {
           case 'fulfilled':
             setTimeout(function () {
               try {
-                x = onFulfilled(self.result)
+                x = onFulfilled(self.PromiseResult)
                 handle(newPromise, x, resolve, reject)
               } catch (err) {
                 reject(err)
@@ -110,7 +112,7 @@
           case 'rejected':
             setTimeout(function () {
               try {
-                x = onRejected(self.result)
+                x = onRejected(self.PromiseResult)
                 handle(newPromise, x, resolve, reject)
               } catch (err) {
                 reject(err)
@@ -142,7 +144,22 @@
       var self = this
       return self.then(null, onRejected)
     },
-    finally: function () {}
+    finally: function (callback) {
+      let self = this,
+        p = self.constructor
+      return self.then(
+        function Fulfill(value) {
+          p.resolve(callback()).then(function () {
+            return value
+          })
+        },
+        function reject(reason) {
+          p.resolve(callback()).then(function () {
+            throw reason
+          })
+        }
+      )
+    }
   }
 
   if (typeof Symbol !== 'undefined') Promise.prototype[Symbol.toStringTag] = 'Promise'
@@ -153,7 +170,7 @@
     })
   }
   Promise.reject = function reject(value) {
-    return new Promise(function (resolve) {
+    return new Promise(function (reject) {
       reject(value)
     })
   }
@@ -162,11 +179,13 @@
       newPromise,
       // 计数器
       n = 0
+
     if (!Array.isArray(promises)) throw new TypeError(promises + 'is not iterable')
     promises = promises.map(function (promise) {
       if (!isPromise(promise)) return new Promise.resolve(promise)
       return promise
     })
+
     newPromise = new Promise(function (resolve, reject) {
       promises.forEach(function (promise, index) {
         promise
