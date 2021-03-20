@@ -46,10 +46,10 @@ axios.defaults.withCredentials = `${options.withCredentials}`
 axios.defaults.headers.post['Content-Type'] = `${options.postContentType}`
 
 // post请求对请求主体信息的统一格式化
-axios.defaults.headers.transformRequest = function (data, headers) {
+axios.defaults.transformRequest = function (data, headers) {
   if (data === null || typeof data !== 'object') return data
 
-  let contentType = headers['Content-type'] || headers.post['Content-Type']
+  let contentType = headers['Content-Type'] || headers.post['Content-Type']
 
   if (contentType.includes('urlencoded')) return qs.stringify(data)
 
@@ -64,7 +64,7 @@ axios.defaults.validateStatus = function (status) {
 }
 
 // 请求拦截器
-axios.interceptors.request.use(function () {
+axios.interceptors.request.use(function (config) {
   // token验证
   const token = sessionStorage.getItem('token')
 
@@ -75,11 +75,30 @@ axios.interceptors.request.use(function () {
 })
 
 // 响应拦截器
-axios.interceptors.responese.use(
+axios.interceptors.response.use(
   function onfulfilled(response) {
     return response.data
   },
-  function onrejected(reson) {}
+  function onrejected(reason) {
+    let response = reason.response
+    if (response) {
+      // 服务器返回结果, 但是状态码没有经过validateStatus
+      switch (response.status) {
+        case 404:
+          // 做自己的处理
+          break
+      }
+    } else {
+      console.dir(qs.parse(reason))
+      if (reason && reason.code === 'ECONNABORTED') {
+      }
+      if (!navigator.onLine) {
+        // 可能断网
+      }
+    }
+    // 业务层面也能走到catch
+    return Promise.reject(reason)
+  }
 )
 
 export default axios
